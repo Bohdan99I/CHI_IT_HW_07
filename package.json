@@ -1,5 +1,5 @@
 {
-  "name": "chi-it-hw-06",
+  "name": "chi-it-hw-07",
   "version": "1.0.0",
   "description": "Rick and Morty characters app",
   "scripts": {
@@ -13,6 +13,8 @@
     "@mui/icons-material": "^6.1.5",
     "@mui/material": "^6.1.5",
     "@mui/x-data-grid": "^7.21.0",
+    "ahooks": "^3.8.1",
+    "axios": "^1.7.7",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.27.0"
