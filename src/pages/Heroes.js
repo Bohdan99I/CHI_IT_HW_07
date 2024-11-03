@@ -1,48 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { CircularProgress, Box, useTheme } from "@mui/material";
+import { CircularProgress, Box, Typography, useTheme } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
 import LoadMoreButton from "../components/LoadMoreButton";
-
-const apiURL = "https://rickandmortyapi.com/api/character";
+import { useRequest } from "ahooks";
+import { fetchCharacters } from "../api/api";
 
 function Heroes() {
-  const [characters, setCharacters] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [error, setError] = useState(null);
-
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const {
+    data,
+    loading,
+    error,
+    run,
+    params = [{ currentPage: 1 }],
+  } = useRequest(({ currentPage }) => fetchCharacters(currentPage), {
+    manual: true,
+    paginated: true,
+    defaultParams: [{ currentPage: 1 }],
+  });
+
   useEffect(() => {
-    let isCancelled = false;
-
-    const fetchCharacters = async (page) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${apiURL}?page=${page}`);
-        const data = await response.json();
-        if (!isCancelled) {
-          setCharacters((prev) => [...prev, ...data.results]);
-          setTotalPages(data.info.pages);
-        }
-      } catch (error) {
-        if (!isCancelled) setError("Error fetching characters");
-        console.error("Error fetching characters:", error);
-      } finally {
-        if (!isCancelled) setLoading(false);
-      }
-    };
-
-    fetchCharacters(currentPage);
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [currentPage]);
+    run({ currentPage: 1 });
+  }, [run]);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -55,8 +37,8 @@ function Heroes() {
   };
 
   const handleLoadMore = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prevPage) => prevPage + 1);
+    if (params && params[0] && params[0].currentPage !== undefined) {
+      run({ currentPage: params[0].currentPage + 1 });
     }
   };
 
@@ -67,11 +49,11 @@ function Heroes() {
           <CircularProgress />
         ) : error ? (
           <Typography variant="body1" color="error">
-            {error}
+            {error.message}
           </Typography>
         ) : (
           <DataGrid
-            rows={characters}
+            rows={data?.results || []}
             columns={columns}
             pageSize={20}
             rowsPerPageOptions={[20]}
@@ -88,7 +70,12 @@ function Heroes() {
         )}
         <LoadMoreButton
           onClick={handleLoadMore}
-          show={!loading && currentPage < totalPages}
+          show={
+            !loading &&
+            params &&
+            params[0] &&
+            params[0].currentPage < (data?.info?.pages || 1)
+          }
         />
       </Box>
       <Box
