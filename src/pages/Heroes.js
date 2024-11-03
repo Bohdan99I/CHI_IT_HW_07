@@ -54,6 +54,12 @@ function Heroes() {
     navigate(`${params.id}`);
   };
 
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       <Box sx={{ flex: 1, height: 500, textAlign: "center", p: 2 }}>
@@ -81,11 +87,7 @@ function Heroes() {
           />
         )}
         <LoadMoreButton
-          onClick={() => {
-            if (currentPage < totalPages) {
-              setCurrentPage((prevPage) => prevPage + 1);
-            }
-          }}
+          onClick={handleLoadMore}
           show={!loading && currentPage < totalPages}
         />
       </Box>
